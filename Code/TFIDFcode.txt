@@ -1,0 +1,45 @@
+import nltk
+import string
+import os
+import csv
+from sklearn.feature_extraction.text import TfidfVectorizer
+from nltk.stem.porter import PorterStemmer
+
+path = '/Users/kai/Desktop/Amazon'
+token_dict = {}
+stemmer = PorterStemmer()
+
+def stem_tokens(tokens, stemmer):
+    stemmed = []
+    for item in tokens:
+        stemmed.append(stemmer.stem(item))
+    return stemmed
+
+def tokenize(text):
+    tokens = nltk.word_tokenize(text)
+    newtokens = [w for w in tokens if w.isalnum()]
+    stems = stem_tokens(tokens, stemmer)
+    return stems
+
+for subdir, dirs, files in os.walk(path):
+    for file in files:
+      if file.startswith("A"):
+        file_path = subdir + os.path.sep + file
+        print file_path
+        Amazoncsvfile = open(file_path, 'r')
+        csvreader = csv.reader(Amazoncsvfile, delimiter = "^")
+        text = "" 
+        #count = 0
+        for row in csvreader:
+            #count +=1
+            #if count ==5:
+                text = text + row[-2]
+        lowers = text.lower()
+        no_punctuation = lowers.translate(None, string.punctuation)
+        token_dict[file] = no_punctuation
+        
+#this can take some time
+tfidf = TfidfVectorizer(tokenizer=tokenize, stop_words='english')
+tfs = tfidf.fit_transform(token_dict.values())
+print len(tfidf.get_feature_names())
+#print tfs
